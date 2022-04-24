@@ -1,42 +1,21 @@
-#!/usr/bin/env python
-# coding: utf-8
-
-# In[1]:
-
-
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 import pystan
 import arviz # to plot posterior and traceplots
 
-
-# In[12]:
-
-
-data = pd.read_csv("D:/Study Iowa State University/Projects/Rahul Dravid dataset/rahul.test.data.csv")
-print(data.head())
-
-
-# In[24]:
-
-
+#read the dataset
+data = pd.read_csv("rahul.test.data.csv")
 data['season'] = data['season'].astype('int')
 print(data.head())
 
-
-# In[15]:
-
-
+#select only the columns which we require
 df = data[['runs', 'year', 'season' ]].copy() # select only required columns
 df.dropna(axis = 0, how = 'any', inplace = True) #delete rows with NA
 print(df.head())
 
 
-# In[17]:
-
-
-#STAN model
+# read in the STAN model
 hier_model = """
 data {
 int<lower=1> n; //number of years
@@ -73,28 +52,16 @@ target += normal_lpdf(y[j] |mu[season[j]],sigma[season[j]]);
 }
 """
 
-
-# In[29]:
-
-
+#prepare the data for the stan model
 dat_hm = {
     "N": len(df.index),
     "n": 17,
     "y": df["runs"],
     "season": df["season"]
 }
+
 fit = pystan.stan(model_code = hier_model, data=dat_hm, iter=10000, chains=1)
 
-
-# In[30]:
-
-
+#check the parameter estimates
 print(fit)  # parameter estimates
 arviz.plot_trace(fit) # posterior density and traceplots
-
-
-# In[ ]:
-
-
-
-
